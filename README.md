@@ -38,7 +38,7 @@ This app aims to leverage AI to simplify personal finance management. The goal i
 
 ## Project Structure
 ```
-finance-ai-app/
+fineancial/
 ├── data/                # Placeholder for datasets (raw/simulated)
 ├── notebooks/           # Jupyter notebooks for exploratory analysis and prototyping
 ├── src/                 # Core codebase for models, preprocessing, etc.
