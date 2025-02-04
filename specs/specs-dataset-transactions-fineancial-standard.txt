@@ -1,0 +1,23 @@
+Fields:
+- Transaction type
+    Description: Represents the transaction type
+    Values: {Expense, Income}
+- Category
+    Description: Represents a conventional transaction category
+    Values: {Food and drink, Groceries, Car, Transfer, 
+             Entertainment, Shopping, Parking, Refund,
+             Healthcare, Bills and fees, Beauty, Home,
+             Sport and hobbies, Transport, Travel,
+             Education, Salary, Other}
+- Label
+    Description: Represents a custom transaction label
+- Date
+    Description: Represents the date at which the transaction was initiated
+- Cleaned Transaction Description
+    Description: Represents a cleaned trasaction description (derived from initial description)
+- Notes
+    Description: Represents custom notes
+- Amount
+    Description: Represents the amount involved in the transaction
+- Currency
+    Description: Represents the currency of the transaction
