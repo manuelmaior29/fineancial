@@ -28,14 +28,6 @@ This app aims to leverage AI to simplify personal finance management. The goal i
    cd fineancial
    ```
 
-### Usage
-1. **Explore Data**:
-   - Run the Jupyter notebooks in the `notebooks/` directory to explore the dataset and experiment with expense classification.
-2. **Categorize Expenses**:
-   - Use the prebuilt models in the `src/models/` directory for automated classification.
-3. **Simulate Data**:
-   - If no dataset is available, use scripts in `src/preprocessing/` to generate sample transaction data.
-
 ## Project Structure
 ```
 fineancial/
