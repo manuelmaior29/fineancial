@@ -12,10 +12,10 @@ class BaseParser(ABC):
         pass
 
 class BTParser(BaseParser):
-    def parse(self, document_path):
-        df_metadata = pd.read_csv(document_path, skiprows=9, nrows=4)
+    def parse(self, file):
+        df_metadata = pd.read_csv(file, skiprows=9, nrows=4)
         df_metadata.columns = [0, 1]
-        df = pd.read_csv(document_path, skiprows=14)
+        df = pd.read_csv(file, skiprows=14)
         transactions = []
         currency = self.get_currency(df_metadata)
         for _, row in df.iterrows():
