@@ -1,8 +1,11 @@
 from abc import ABC, abstractmethod
+import locale
 from src.standard import StandardTransaction
 import pandas as pd
 import re
 
+locale.setlocale(locale.LC_NUMERIC, 'en_US.UTF-8')
+                 
 class BaseParser(ABC):
     """Abstract base class for bank statement parsers."""
 
@@ -12,9 +15,10 @@ class BaseParser(ABC):
         pass
 
 class BTParser(BaseParser):
-    def parse(self, file):
+    def parse(self, file, substrings_to_remove=None):
         df_metadata = pd.read_csv(file, skiprows=9, nrows=4)
         df_metadata.columns = [0, 1]
+        file.seek(0)
         df = pd.read_csv(file, skiprows=14)
         transactions = []
         currency = self.get_currency(df_metadata)
@@ -25,7 +29,7 @@ class BTParser(BaseParser):
                     category=self.get_category(row),
                     label="",
                     date=self.get_date(row),
-                    cleaned_desc=self.clean_description(row["Description"]),
+                    cleaned_desc=self.clean_description(row["Description"], substrings_to_remove),
                     notes="",
                     amount=self.get_amount(row),
                     currency=currency
@@ -48,9 +52,11 @@ class BTParser(BaseParser):
         return ""
 
     def get_amount(self, row):
-        return row["Debit"] if pd.notna(row["Debit"]) else row["Credit"]
+        amount_str = row["Debit"] if pd.notna(row["Debit"]) else row["Credit"]
+        amount = pd.to_numeric(amount_str.replace(",", ""), downcast="float")
+        return float(amount)
 
-    def clean_description(self, desc):
+    def clean_description(self, desc, substrings_to_remove):
         clean_desc = desc.split(";")[1]
         clean_desc = re.sub(r"TID:\w+", "", clean_desc)
         clean_desc = re.sub(r"comision tranzactie \d+\.\d+ RON", "", clean_desc)
@@ -60,4 +66,7 @@ class BTParser(BaseParser):
         clean_desc = re.sub(r"\s+", " ", clean_desc)
         clean_desc = clean_desc.strip()
         clean_desc = re.sub(r"RRN: \w+", "", clean_desc)
+        if substrings_to_remove:
+            for substring in substrings_to_remove:
+                clean_desc = re.sub(substring, "", clean_desc)
         return clean_desc
