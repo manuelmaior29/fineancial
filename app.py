@@ -1,67 +1,51 @@
-import json
+import sys
+sys.path.append("src")
+
 import streamlit as st
 import pandas as pd
-import io
-from src.preprocessing.parser import *
-from src.models.rulebased import *
+import json
+from st_aggrid import AgGrid, GridOptionsBuilder
+from preprocessing.parser import BTParser
 
-
-if "transactions" not in st.session_state:
-    st.session_state.transactions = pd.DataFrame()
-if "transactions_classification_rules" not in st.session_state:
-    st.session_state.transactions_classification_rules = None
-if "transactions_classifier_model" not in st.session_state:
-    st.session_state.transactions_classifier_model = RuleBasedClassifier(rules=None)
-
-def parse_classification_rules(file):
+def load_csv(file):
     try:
-        classification_rules = {}
-        classification_rules = json.load(file)
-        return classification_rules
+        return pd.read_csv(file)
     except Exception as e:
-        st.error(f"Error parsing the classification rules: {e}")
-        return {}
+        st.error(f"Error reading CSV file: {e}")
+        return None
 
-def parse_xlsx(file):
+def load_json(file):
     try:
-        # TODO: Replace hardcoded parser
+        return json.load(file)
+    except json.JSONDecodeError as e:
+        st.error(f"Error reading JSON file: {e}")
+        return None
+
+def main():
+    st.title("Editable Bank Transactions Table")
+
+    csv_file = st.file_uploader("Upload your bank transactions file (CSV)", type=["csv"])
+    if csv_file is not None:
+        transactions = []
         parser = BTParser()
-        transaction_data = parser.parse(document_path=file)
-        return pd.DataFrame([transaction.__dict__ for transaction in transaction_data])
-    except Exception as e:
-        st.error(f"Error processing file: {e}")
-        return pd.DataFrame()
+        transactions = parser.parse(csv_file, sep=",")
+        print(transactions[0].__dict__)
+        df_transactions = pd.DataFrame([transaction.__dict__ for transaction in transactions])
 
-st.set_page_config(layout='wide')
-st.title("💰 Bank Transactions Parser")
+        gb = GridOptionsBuilder.from_dataframe(df_transactions)
+        gb.configure_default_column(editable=True)
+        grid_options = gb.build()
 
-uploaded_rules_file = st.file_uploader("Upload rules for transaction classification", type=["json"])
-if uploaded_rules_file is not None:
-    classification_rules = parse_classification_rules(uploaded_rules_file)
-    st.session_state.transactions_classification_rules = classification_rules
-    st.session_state.transactions_classifier_model = RuleBasedClassifier(rules=classification_rules)
-    st.success("✅ Classification rules parsed successfully!")
+        grid_response = AgGrid(df_transactions, gridOptions=grid_options, editable=True, height=400)
 
-uploaded_file = st.file_uploader("Upload a bank statement (CSV)", type=["csv"])
-if uploaded_file is not None:
-    parsed_transactions = parse_xlsx(uploaded_file)
+    st.header("Upload JSON Rules")
+    json_file = st.file_uploader("Upload your rules file (json)", type=["json"])
+    if json_file is not None:
+        rules = load_json(json_file)
+        if rules is not None:
+            st.write("**Loaded Rules:**")
+            st.json(rules)
 
-    if not parsed_transactions.empty and st.session_state.transactions_classification_rules:
-        st.success("✅ Transactions parsed successfully!")
-        parsed_transactions["category"] = parsed_transactions["cleaned_desc"].map(lambda x: st.session_state.transactions_classifier_model.classify(x))
-        st.session_state.transactions = pd.concat(
-            [st.session_state.transactions, parsed_transactions], ignore_index=True
-        )
-        
 
-st.subheader("📊 All Transactions")
-st.data_editor(st.session_state.transactions)
-st.subheader("⬇️ Download Transactions")
-buffer = io.BytesIO()
-st.session_state.transactions.to_excel(buffer, index=False)
-st.download_button(
-    label="Download as Excel",
-    data=buffer.getvalue(),
-    file_name="aggregated_transactions.xlsx",
-    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-)
+if __name__ == "__main__":
+    main()

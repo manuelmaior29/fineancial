@@ -15,13 +15,13 @@ class BaseParser(ABC):
         pass
 
 class BTParser(BaseParser):
-    def parse(self, file, substrings_to_remove=None):
-        df_metadata = pd.read_csv(file, skiprows=9, nrows=4)
-        df_metadata.columns = [0, 1]
+    def parse(self, file, substrings_to_remove=None, sep=','):
+        # df_metadata = pd.read_csv(file, skiprows=9, nrows=4, sep=sep)
+        # df_metadata.columns = [0, 1]
         file.seek(0)
-        df = pd.read_csv(file, skiprows=14)
+        df = pd.read_csv(file, skiprows=14, sep=sep)
         transactions = []
-        currency = self.get_currency(df_metadata)
+        currency = "RON" # self.get_currency(df_metadata)
         for _, row in df.iterrows():
             if not "Round Up" in row["Description"]:
                 transaction = StandardTransaction(
