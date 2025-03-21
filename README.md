@@ -4,7 +4,8 @@
 This app aims to leverage AI to simplify personal finance management. The goal is to help users better understand and optimize their spending habits with **minimal** effort. Future plans include building a comprehensive finance management system with advanced AI capabilities.
 
 ## Features
-- **Expense Classification**: Automatically categorize transactions (e.g., "food", "transport", "entertainment") based on transaction descriptions.
+- **Transaction format standardization**: Ensure the standardisation of transaction data from an arbitrary bank transaction report to a standard transaction format.
+- **Transaction classification**: Automatically categorize transactions (e.g., "food", "transport", "entertainment") based on transaction descriptions.
 - **Future Roadmap**:
   - Savings goal tracking.
   - Real-time anomaly detection in spending patterns.
@@ -32,10 +33,11 @@ This app aims to leverage AI to simplify personal finance management. The goal i
 ```
 fineancial/
 ├── data/                # Placeholder for datasets (raw/simulated)
-├── notebooks/           # Jupyter notebooks for exploratory analysis and prototyping
+├── notebooks/           # Jupyter notebooks for exploratory analysis and prototyping (temporary tracking)
+├── specs/               # Files representing specifications (e.g., transaction data description)
 ├── src/                 # Core codebase for models, preprocessing, etc.
 │   ├── preprocessing/   # Scripts for data cleaning and preparation
-│   ├── models/          # Scripts for AI models
+│   ├── ...              # Other folders for modelling
 │   └── utils.py         # Helper functions
 ├── tests/               # Unit tests for code robustness
 ├── ui/                  # UI-related files for future integration
@@ -43,15 +45,6 @@ fineancial/
 ├── requirements.txt     # Dependencies for the project
 └── LICENSE              # License for open-source use
 ```
-
-## Roadmap
-1. Implement rule-based and AI-driven expense classification.
-2. Build a user-friendly UI for visualizing insights and interacting with the app.
-3. Integrate advanced AI solutions for:
-   - Predicting savings patterns.
-   - Detecting anomalies in financial behavior.
-   - Providing personalized financial advice.
-4. Scale the app to support multiple users with secure data storage and processing.
 
 ## Contributing
 Contributions are welcome! If you have ideas for new features or improvements, feel free to:
