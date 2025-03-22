@@ -28,7 +28,7 @@ def main():
     if csv_file is not None:
         transactions = []
         parser = BTParser()
-        transactions = parser.parse(csv_file, sep=",")
+        transactions = parser.parse(csv_file, substrings_to_remove=[], sep=",")
         print(transactions[0].__dict__)
         df_transactions = pd.DataFrame([transaction.__dict__ for transaction in transactions])
 
@@ -36,7 +36,7 @@ def main():
         gb.configure_default_column(editable=True)
         grid_options = gb.build()
 
-        grid_response = AgGrid(df_transactions, gridOptions=grid_options, editable=True, height=400)
+        _ = AgGrid(df_transactions, gridOptions=grid_options, editable=True, height=400)
 
     st.header("Upload JSON Rules")
     json_file = st.file_uploader("Upload your rules file (json)", type=["json"])
@@ -45,7 +45,6 @@ def main():
         if rules is not None:
             st.write("**Loaded Rules:**")
             st.json(rules)
-
 
 if __name__ == "__main__":
     main()

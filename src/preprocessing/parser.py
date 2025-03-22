@@ -22,6 +22,7 @@ class BTParser(BaseParser):
         df = pd.read_csv(file, skiprows=14, sep=sep)
         transactions = []
         currency = "RON" # self.get_currency(df_metadata)
+        print(df)
         for _, row in df.iterrows():
             if not "Round Up" in row["Description"]:
                 transaction = StandardTransaction(
@@ -56,8 +57,11 @@ class BTParser(BaseParser):
         amount = pd.to_numeric(amount_str.replace(",", ""), downcast="float")
         return float(amount)
 
-    def clean_description(self, desc, substrings_to_remove):
+    def clean_description(self, desc: str, substrings_to_remove: str) -> str:
         clean_desc = desc.split(";")[1]
+        if substrings_to_remove:
+            for substring in substrings_to_remove:
+                clean_desc = re.sub(substring, "", clean_desc)
         clean_desc = re.sub(r"TID:\w+", "", clean_desc)
         clean_desc = re.sub(r"comision tranzactie \d+\.\d+ RON", "", clean_desc)
         clean_desc = re.sub(r"valoare tranzactie: \d+\.\d+ RON", "", clean_desc)
@@ -66,7 +70,15 @@ class BTParser(BaseParser):
         clean_desc = re.sub(r"\s+", " ", clean_desc)
         clean_desc = clean_desc.strip()
         clean_desc = re.sub(r"RRN: \w+", "", clean_desc)
-        if substrings_to_remove:
-            for substring in substrings_to_remove:
-                clean_desc = re.sub(substring, "", clean_desc)
+        clean_desc = re.sub("\.", " ", clean_desc)
+        clean_desc = re.sub("\,", " ", clean_desc)
+        clean_desc = re.sub("\:", " ", clean_desc)
+        clean_desc = re.sub("\;", " ", clean_desc)
+        clean_desc = re.sub("\/", " ", clean_desc)
+        clean_desc = re.sub("\\*", " ", clean_desc)
+        clean_desc = re.sub("\-", " ", clean_desc)
+        clean_desc = re.sub("\s+", " ", clean_desc)
+        clean_desc = re.sub("(\d+)", "", clean_desc)
+        clean_desc = clean_desc.lower()
+        clean_desc = re.sub("pos", "", clean_desc)
         return clean_desc

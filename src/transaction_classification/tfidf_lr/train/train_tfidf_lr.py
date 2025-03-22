@@ -25,20 +25,6 @@ def main():
     args = parser.parse_args()
     data = pd.read_csv(args.train_data, sep=';')
 
-    # To move in the parser that brings data to "standard format"
-    data["cleaned_desc"] = data["cleaned_desc"].str.replace(".", " ")
-    data["cleaned_desc"] = data["cleaned_desc"].str.replace(",", " ")
-    data["cleaned_desc"] = data["cleaned_desc"].str.replace(":", " ")
-    data["cleaned_desc"] = data["cleaned_desc"].str.replace(";", " ")
-    data["cleaned_desc"] = data["cleaned_desc"].str.replace("/", " ")
-    data["cleaned_desc"] = data["cleaned_desc"].str.replace("*", " ")
-    data["cleaned_desc"] = data["cleaned_desc"].str.replace("-", " ")
-    data["cleaned_desc"] = data["cleaned_desc"].str.replace(r"\s+", " ", regex=True)
-    data["cleaned_desc"] = data["cleaned_desc"].str.replace(r"(\d+)", "", regex=True)
-    data["cleaned_desc"] = data["cleaned_desc"].str.lower()
-    data["cleaned_desc"] = data["cleaned_desc"].str.replace("pos", "")
-    data["cleaned_desc"] = data["cleaned_desc"].fillna("")
-
     X = data["cleaned_desc"]
     y = data["category"]
     feature_extractor, model = train_model(X, y, max_iter=args.max_iter, min_word_freq=args.min_word_freq)
