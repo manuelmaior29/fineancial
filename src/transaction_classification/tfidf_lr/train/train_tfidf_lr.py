@@ -5,7 +5,7 @@ from sklearn.model_selection import train_test_split
 import sys
 sys.path.append("..")
 from argparse import ArgumentParser
-from models.tfidf_lr.feature_extraction import CustomTfidfVectorizer
+from feature_extraction import CustomTfidfVectorizer
 
 def train_model(X, y, max_iter=1000, min_word_freq=2):
     feature_extractor = CustomTfidfVectorizer(min_word_freq=min_word_freq)
@@ -47,9 +47,7 @@ def main():
         pickle.dump(model, f)
 
     with open(args.output_model_path + ".vectorizer", "wb") as f:
-        print(feature_extractor.vocab_)
         pickle.dump(feature_extractor, f)
 
 if __name__ == "__main__":
-
     main()

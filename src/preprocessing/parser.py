@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 import locale
-from src.standard import StandardTransaction
+from preprocessing.standard import StandardTransaction
 import pandas as pd
 import re
 
