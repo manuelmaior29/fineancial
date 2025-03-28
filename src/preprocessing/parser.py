@@ -15,14 +15,13 @@ class BaseParser(ABC):
         pass
 
 class BTParser(BaseParser):
-    def parse(self, file, substrings_to_remove=None, sep=','):
+    def parse(self, file, substrings_to_remove=[], sep=','):
         # df_metadata = pd.read_csv(file, skiprows=9, nrows=4, sep=sep)
         # df_metadata.columns = [0, 1]
         file.seek(0)
         df = pd.read_csv(file, skiprows=14, sep=sep)
         transactions = []
         currency = "RON" # self.get_currency(df_metadata)
-        print(df)
         for _, row in df.iterrows():
             if not "Round Up" in row["Description"]:
                 transaction = StandardTransaction(
@@ -66,19 +65,16 @@ class BTParser(BaseParser):
         clean_desc = re.sub(r"comision tranzactie \d+\.\d+ RON", "", clean_desc)
         clean_desc = re.sub(r"valoare tranzactie: \d+\.\d+ RON", "", clean_desc)
         clean_desc = re.sub(r"RRN:\w+", "", clean_desc)
+        clean_desc = re.sub(r"RRN: \w+", "", clean_desc)
         clean_desc = re.sub(r"\d{2}/\d{2}/\d{4} \w+", "", clean_desc)
         clean_desc = re.sub(r"\s+", " ", clean_desc)
         clean_desc = clean_desc.strip()
-        clean_desc = re.sub(r"RRN: \w+", "", clean_desc)
-        clean_desc = re.sub("\.", " ", clean_desc)
-        clean_desc = re.sub("\,", " ", clean_desc)
-        clean_desc = re.sub("\:", " ", clean_desc)
-        clean_desc = re.sub("\;", " ", clean_desc)
-        clean_desc = re.sub("\/", " ", clean_desc)
-        clean_desc = re.sub("\\*", " ", clean_desc)
-        clean_desc = re.sub("\-", " ", clean_desc)
-        clean_desc = re.sub("\s+", " ", clean_desc)
         clean_desc = re.sub("(\d+)", "", clean_desc)
         clean_desc = clean_desc.lower()
         clean_desc = re.sub("pos", "", clean_desc)
+        clean_desc = re.sub(r'\W+', ' ', clean_desc)
+        clean_desc = re.sub(r'\b\w{1,2}\b', '', clean_desc)
+        clean_desc = re.sub(r'^\s+|\s+$', '', clean_desc)
+        clean_desc = " ".join(list(dict.fromkeys(clean_desc.split(" ")))) if isinstance(clean_desc, str) else clean_desc
+        clean_desc = re.sub(r"\s+", " ", clean_desc)
         return clean_desc
