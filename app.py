@@ -1,11 +1,14 @@
 import sys
 sys.path.append("src")
 
+from matplotlib import pyplot as plt
 import streamlit as st
 import pandas as pd
 import json
 from st_aggrid import AgGrid, GridOptionsBuilder
 from preprocessing.parser import BTParser
+import plotly.graph_objects as go
+
 
 def load_csv(file):
     try:
@@ -22,29 +25,37 @@ def load_json(file):
         return None
 
 def main():
-    st.title("Editable Bank Transactions Table")
+    st.title("fineancial")
 
+    # Upload CSV file with raw transactions data
     csv_file = st.file_uploader("Upload your bank transactions file (CSV)", type=["csv"])
     if csv_file is not None:
         transactions = []
-        parser = BTParser()
+        parser = BTParser() # TODO: Add other parsers
         transactions = parser.parse(csv_file, substrings_to_remove=[], sep=",")
-        print(transactions[0].__dict__)
+
         df_transactions = pd.DataFrame([transaction.__dict__ for transaction in transactions])
 
         gb = GridOptionsBuilder.from_dataframe(df_transactions)
         gb.configure_default_column(editable=True)
         grid_options = gb.build()
 
-        _ = AgGrid(df_transactions, gridOptions=grid_options, editable=True, height=400)
+        grid_response = AgGrid(df_transactions, gridOptions=grid_options, editable=True, height=400)
 
-    st.header("Upload JSON Rules")
-    json_file = st.file_uploader("Upload your rules file (json)", type=["json"])
-    if json_file is not None:
-        rules = load_json(json_file)
-        if rules is not None:
-            st.write("**Loaded Rules:**")
-            st.json(rules)
+        df_transactions = pd.DataFrame(grid_response["data"])
+
+        # Plot transaction amount sums by category (color coded by category)
+        fig = go.Figure(data=[go.Bar(x=df_transactions["category"], y=df_transactions["amount"])])
+        fig.update_layout(title="Transaction amounts by category", xaxis_title="Category", yaxis_title="Amount")
+        st.plotly_chart(fig)
+
+    # st.header("Upload JSON Rules")
+    # json_file = st.file_uploader("Upload your rules file (json)", type=["json"])
+    # if json_file is not None:
+    #     rules = load_json(json_file)
+    #     if rules is not None:
+    #         st.write("**Loaded Rules:**")
+    #         st.json(rules)
 
 if __name__ == "__main__":
     main()

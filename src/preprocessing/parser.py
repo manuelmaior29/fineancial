@@ -19,7 +19,7 @@ class BTParser(BaseParser):
         # df_metadata = pd.read_csv(file, skiprows=9, nrows=4, sep=sep)
         # df_metadata.columns = [0, 1]
         file.seek(0)
-        df = pd.read_csv(file, skiprows=14, sep=sep)
+        df = pd.read_csv(file, skiprows=14, sep=sep, encoding="ISO-8859-1")
         transactions = []
         currency = "RON" # self.get_currency(df_metadata)
         for _, row in df.iterrows():
@@ -49,7 +49,7 @@ class BTParser(BaseParser):
     
     def get_category(self, row):
         # TODO: Return category based on cleaned description / transaction data
-        return ""
+        return "Other"
 
     def get_amount(self, row):
         amount_str = row["Debit"] if pd.notna(row["Debit"]) else row["Credit"]
