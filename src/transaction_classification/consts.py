@@ -1,0 +1,21 @@
+from enum import Enum
+
+class TransactionCategory(Enum):
+    FOOD_AND_DRINK = "Food and drink"
+    GROCERIES = "Groceries"
+    CAR = "Car"
+    TRANSFER = "Transfer"
+    ENTERTAINMENT = "Entertainment"
+    SHOPPING = "Shopping"
+    PARKING = "Parking"
+    REFUND = "Refund"
+    HEALTHCARE = "Healthcare"
+    BILLS_AND_FEES = "Bills and fees"
+    BEAUTY = "Beauty"
+    HOME = "Home"
+    SPORT_AND_HOBBIES = "Sport and hobbies"
+    TRANSPORT = "Transport" 
+    TRAVEL = "Travel"
+    EDUCATION = "Education"
+    SALARY = "Salary"
+    OTHER = "Other"

@@ -1,8 +1,11 @@
 from abc import ABC, abstractmethod
 import locale
+import random
 from preprocessing.standard import StandardTransaction
 import pandas as pd
 import re
+
+from transaction_classification.consts import TransactionCategory
 
 locale.setlocale(locale.LC_NUMERIC, 'en_US.UTF-8')
                  
@@ -12,7 +15,7 @@ class BaseParser(ABC):
     @abstractmethod
     def parse(self, document_path: str):
         """Parse the document and return a list of StandardTransaction objects."""
-        pass
+        raise NotImplementedError()
 
 class BTParser(BaseParser):
     def parse(self, file, substrings_to_remove=[], sep=','):
@@ -49,7 +52,7 @@ class BTParser(BaseParser):
     
     def get_category(self, row):
         # TODO: Return category based on cleaned description / transaction data
-        return "Other"
+        return random.choice(list(TransactionCategory)).value
 
     def get_amount(self, row):
         amount_str = row["Debit"] if pd.notna(row["Debit"]) else row["Credit"]

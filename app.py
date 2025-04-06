@@ -1,5 +1,8 @@
 import sys
+
 sys.path.append("src")
+from transaction_classification.adapter import TransactionClassificationAdapter
+from transaction_classification.models.rulebased.rulebased import RuleBasedTransactionClassifier
 
 from matplotlib import pyplot as plt
 import streamlit as st
@@ -27,6 +30,11 @@ def load_json(file):
 def main():
     st.title("fineancial")
 
+    # AI-driven modules
+    # TODO: Prepare code for hotswapping
+    transaction_classification_model_rule_based = RuleBasedTransactionClassifier(rules=None)
+    transaction_classification_adapter = TransactionClassificationAdapter(model=transaction_classification_model_rule_based, preprocess_fn=lambda x: x.cleaned_desc, postprocess_fn=lambda x: x)
+
     # Upload CSV file with raw transactions data
     csv_file = st.file_uploader("Upload your bank transactions file (CSV)", type=["csv"])
     if csv_file is not None:
@@ -34,7 +42,9 @@ def main():
         parser = BTParser() # TODO: Add other parsers
         transactions = parser.parse(csv_file, substrings_to_remove=[], sep=",")
 
+        transaction_categories = [transaction_classification_adapter.predict(transaction) for transaction in transactions]
         df_transactions = pd.DataFrame([transaction.__dict__ for transaction in transactions])
+        df_transactions["category"] = [category.value for category in transaction_categories] 
 
         gb = GridOptionsBuilder.from_dataframe(df_transactions)
         gb.configure_default_column(editable=True)
