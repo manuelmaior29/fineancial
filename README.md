@@ -37,7 +37,9 @@ fineancial/
 ├── specs/               # Files representing specifications (e.g., transaction data description)
 ├── src/                 # Core codebase for models, preprocessing, etc.
 │   ├── preprocessing/   # Scripts for data cleaning and preparation
-│   ├── ...              # Other folders for modelling
+│   ├── ...              # Other folders, each dedicated for a use-case (e.g., bank transaction classification)
+│       ├── models       # Model implementations for a specific use-case (each with its dedicated folder for inference and training)
+        └── ...          # Other useful and relevant scripts 
 │   └── utils.py         # Helper functions
 ├── tests/               # Unit tests for code robustness
 ├── ui/                  # UI-related files for future integration
