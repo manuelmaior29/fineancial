@@ -1,6 +1,5 @@
 from sklearn.preprocessing import LabelEncoder
 from transaction_classification.consts import TransactionCategory
-
 class TransactionCategoryEncoder(LabelEncoder):
     def __init__(self, categories=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -9,3 +8,4 @@ class TransactionCategoryEncoder(LabelEncoder):
 
     def transform(self, y):
         return super().transform(y)
+    

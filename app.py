@@ -1,4 +1,7 @@
+import random
 import sys
+
+from utils import string_to_rgb
 
 sys.path.append("src")
 from transaction_classification.adapter import TransactionClassificationAdapter
@@ -54,9 +57,21 @@ def main():
 
         df_transactions = pd.DataFrame(grid_response["data"])
 
-        # Plot transaction amount sums by category (color coded by category)
-        fig = go.Figure(data=[go.Bar(x=df_transactions["category"], y=df_transactions["amount"])])
-        fig.update_layout(title="Transaction amounts by category", xaxis_title="Category", yaxis_title="Amount")
+        df_transactions_expenses = df_transactions[df_transactions["transaction_type"] == "Expense"] \
+            .groupby(["category"]) \
+            .agg({"amount": "sum"})\
+            .reset_index()
+        fig = go.Figure(data=[go.Bar(x=df_transactions_expenses["category"], 
+                                     y=df_transactions_expenses["amount"], 
+                                     marker_color=[string_to_rgb(category) for category in df_transactions_expenses["category"]])])
+        fig.update_layout(title="Transaction Amount Sums by Category (Expenses)", xaxis_title="Category", yaxis_title="Amount")
+        st.plotly_chart(fig)
+
+        df_transactions_incomes = df_transactions[df_transactions["transaction_type"] == "Income"].groupby(["category"]).agg({"amount": "sum"}).reset_index()
+        fig = go.Figure(data=[go.Bar(x=df_transactions_incomes["category"], 
+                                     y=df_transactions_incomes["amount"],
+                                     marker_color=[string_to_rgb(category) for category in df_transactions_incomes["category"]])])
+        fig.update_layout(title="Transaction Amount Sums by Category (Incomes)", xaxis_title="Category", yaxis_title="Amount")
         st.plotly_chart(fig)
 
     # st.header("Upload JSON Rules")
