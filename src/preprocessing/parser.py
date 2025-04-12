@@ -7,7 +7,10 @@ import re
 
 from transaction_classification.consts import TransactionCategory
 
-locale.setlocale(locale.LC_NUMERIC, 'en_US.UTF-8')
+try:
+    locale.setlocale(locale.LC_NUMERIC, 'en_US.UTF-8')
+except locale.Error:
+    locale.setlocale(locale.LC_NUMERIC, 'C')
                  
 class BaseParser(ABC):
     """Abstract base class for bank statement parsers."""
