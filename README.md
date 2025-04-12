@@ -3,6 +3,9 @@
 ## Overview
 This app aims to leverage AI to simplify personal finance management. The goal is to help users better understand and optimize their spending habits with **minimal** effort. Future plans include building a comprehensive finance management system with advanced AI capabilities.
 
+### 🚀 Try It Out
+[![Open in Streamlit](https://img.shields.io/badge/Deployed%20on-Streamlit-red?logo=streamlit)](https://your-streamlit-app-link.streamlit.app)
+
 ## Features
 - **Transaction format standardization**: Ensure the standardisation of transaction data from an arbitrary bank transaction report to a standard transaction format.
 - **Transaction classification**: Automatically categorize transactions (e.g., "food", "transport", "entertainment") based on transaction descriptions.
@@ -13,7 +16,7 @@ This app aims to leverage AI to simplify personal finance management. The goal i
 
 ## Getting Started
 ### Prerequisites
-- Python 3.8 or above.
+- Python 3.12.
 - Install the required dependencies:
   ```bash
   pip install -r requirements.txt
