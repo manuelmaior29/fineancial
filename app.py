@@ -1,13 +1,12 @@
-import random
 import sys
 
 sys.path.append("src")
 
+from ui.static_content import HELP_UPLOAD_FILE
 from utils import string_to_rgb
 from transaction_classification.adapter import TransactionClassificationAdapter
 from transaction_classification.models.rulebased.rulebased import RuleBasedTransactionClassifier
 
-import matplotlib.pyplot as plt
 import streamlit as st
 import pandas as pd
 import json
@@ -41,7 +40,9 @@ def main():
     transaction_classification_adapter = TransactionClassificationAdapter(model=transaction_classification_model_rule_based, preprocess_fn=lambda x: x.cleaned_desc, postprocess_fn=lambda x: x)
 
     # Upload CSV file with raw transactions data
-    csv_file = st.file_uploader("Upload your bank transactions file (CSV)", type=["csv"])
+    csv_file = st.file_uploader("Upload your bank transactions file (CSV)", 
+                                type=["csv"],
+                                help=HELP_UPLOAD_FILE)
     if csv_file is not None:
         transactions = []
         parser = BTParser() # TODO: Add other parsers
