@@ -10,16 +10,13 @@ class RulesNotFoundError(Exception):
 class RuleBasedTransactionClassifier:
     def __init__(self, rules = None):
         if not rules:
-            try:
+            if "TRANSACTION_CLASSIFICATION_RULES" in os.environ:
                 self.rules = json.loads(os.environ["TRANSACTION_CLASSIFICATION_RULES"])
-            except KeyError as e:
-                raise RulesNotFoundError(f"Rules not found in environment variable: {e}")
-
-            try:
+            elif "TRANSACTION_CLASSIFICATION_RULES_PATH" in os.environ:
                 with open(os.environ["TRANSACTION_CLASSIFICATION_RULES_PATH"], "r") as f:
                     self.rules = json.load(f)
-            except FileNotFoundError as e:
-                raise RulesNotFoundError(f"Rules file not found: {e}")
+            else:
+                raise RulesNotFoundError("Rules not found in environment variable or file")
         else:
             self.rules = rules
 

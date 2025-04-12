@@ -31,6 +31,8 @@ def load_json(file):
         return None
 
 def main():
+    # Set app title
+    st.set_page_config(page_title="fineancial", page_icon=":moneybag:")
     st.title("fineancial")
 
     # AI-driven modules
