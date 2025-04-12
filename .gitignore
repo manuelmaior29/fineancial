@@ -170,3 +170,7 @@ cython_debug/
 # Generated
 *.model
 *.vectorizer
+
+# MLflow
+mlruns/
+mlartifacts/

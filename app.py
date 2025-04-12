@@ -1,13 +1,13 @@
 import random
 import sys
 
-from utils import string_to_rgb
-
 sys.path.append("src")
+
+from utils import string_to_rgb
 from transaction_classification.adapter import TransactionClassificationAdapter
 from transaction_classification.models.rulebased.rulebased import RuleBasedTransactionClassifier
 
-from matplotlib import pyplot as plt
+import matplotlib.pyplot as plt
 import streamlit as st
 import pandas as pd
 import json
