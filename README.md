@@ -4,7 +4,7 @@
 This app aims to leverage AI to simplify personal finance management. The goal is to help users better understand and optimize their spending habits with **minimal** effort. Future plans include building a comprehensive finance management system with advanced AI capabilities.
 
 ### 🚀 Try It Out
-[![Open in Streamlit](https://img.shields.io/badge/Deployed%20on-Streamlit-red?logo=streamlit)](https://your-streamlit-app-link.streamlit.app)
+[![Open in Streamlit](https://img.shields.io/badge/Deployed%20on-Streamlit-red?logo=streamlit)](https://fineancial-k4hhnhcg9ibqslqzjgp7v4.streamlit.app/)
 
 ## Features
 - **Transaction format standardization**: Ensure the standardisation of transaction data from an arbitrary bank transaction report to a standard transaction format.
