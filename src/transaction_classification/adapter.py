@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 
 from transaction_classification.consts import TransactionCategory
-from preprocessing.standard import StandardTransaction
+from processing.standard import StandardTransaction
 
 class TransactionPredictable(ABC):
     @abstractmethod

@@ -1,7 +1,8 @@
 from abc import ABC, abstractmethod
+import datetime
 import locale
 import random
-from preprocessing.standard import StandardTransaction
+from processing.standard import StandardTransaction
 import pandas as pd
 import re
 
@@ -48,7 +49,11 @@ class BTParser(BaseParser):
 
     def get_date(self, row):
         date = re.search(r"(\d{2}/\d{2}/\d{4})", row["Description"])
-        return date[0] if date else row["Processing date"]
+        date = date[0] if date else row["Processing date"]
+        date = date.replace("-", "/")
+        date = datetime.datetime.strptime(date, "%d/%m/%Y").date()
+        date = pd.to_datetime(date)
+        return date
     
     def get_transaction_type(self, row):
         return "Income" if pd.notna(row["Credit"]) else ("Expense" if pd.notna(row["Debit"]) else "Unknown")
