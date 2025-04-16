@@ -4,12 +4,12 @@ from datetime import datetime
 import streamlit as st
 import pandas as pd
 import json
-import plotly.graph_objects as go
+
+import ui.charts
 
 sys.path.append("src")
 from processing.parser import BTParser
 from ui.static_content import HELP_UPLOAD_FILE
-from utils import string_to_rgb
 from transaction_classification.adapter import TransactionClassificationAdapter
 from transaction_classification.models.rulebased.rulebased import RuleBasedTransactionClassifier
 import processing.filters as filters
@@ -29,7 +29,6 @@ def load_json(file):
         return None
 
 def main():
-    # Set app title
     st.set_page_config(page_title="fineancial", 
                        page_icon=":moneybag:",
                        layout="wide")
@@ -66,10 +65,6 @@ def main():
                 key="transactions_table"
             )
             df_transactions = pd.DataFrame(grid_response)
-            df_transactions_expenses = df_transactions[df_transactions["transaction_type"] == "Expense"] \
-                .groupby(["category"]) \
-                .agg({"amount": "sum"})\
-                .reset_index()
         
         # Graph section
         with column_graphs:
@@ -84,18 +79,17 @@ def main():
 
             with tab_category_overview:
                 # TODO: Replace code with module that calculates transaction amount sums by category
-                fig = go.Figure(data=[go.Bar(x=df_transactions_expenses["category"], 
-                                            y=df_transactions_expenses["amount"], 
-                                            marker_color=[string_to_rgb(category) for category in df_transactions_expenses["category"]])])
-                fig.update_layout(title="Transaction Amount Sums by Category (Expenses)", xaxis_title="Category", yaxis_title="Amount")
-                st.plotly_chart(fig)
+                df_transactions_expenses = df_transactions[df_transactions["transaction_type"] == "Expense"] \
+                    .groupby(["category"]) \
+                    .agg({"amount": "sum"}) \
+                    .reset_index()
+                ui.charts.show_bar_chart(df_transactions_expenses, "category", "amount", "Transaction Amount Sums by Category (Expenses)", "Category", "Amount")
 
-                df_transactions_incomes = df_transactions[df_transactions["transaction_type"] == "Income"].groupby(["category"]).agg({"amount": "sum"}).reset_index()
-                fig = go.Figure(data=[go.Bar(x=df_transactions_incomes["category"], 
-                                            y=df_transactions_incomes["amount"],
-                                            marker_color=[string_to_rgb(category) for category in df_transactions_incomes["category"]])])
-                fig.update_layout(title="Transaction Amount Sums by Category (Incomes)", xaxis_title="Category", yaxis_title="Amount")
-                st.plotly_chart(fig)
+                df_transactions_incomes = df_transactions[df_transactions["transaction_type"] == "Income"] \
+                    .groupby(["category"]) \
+                    .agg({"amount": "sum"}) \
+                    .reset_index()
+                ui.charts.show_bar_chart(df_transactions_incomes, "category", "amount", "Transaction Amount Sums by Category (Incomes)", "Category", "Amount")
 
             with tab_trends:
                 # TODO: Replace code with module that calculates running balance
@@ -109,22 +103,7 @@ def main():
                     axis=1
                 )
                 df_transactions["running_balance"] = df_transactions["signed_amount"].cumsum()
-                fig = go.Figure(
-                    data=[go.Scatter(
-                        x=df_transactions["date"],
-                        y=df_transactions["running_balance"],
-                        mode="lines",
-                        name="Running Balance"
-                    )]
-                )
-                fig.update_layout(
-                    title="Running Balance Over Time",
-                    xaxis_title="Date",
-                    yaxis_title="Amount (RON)",
-                    template="plotly_white"
-                )
-
-                st.plotly_chart(fig, use_container_width=True)
+                ui.charts.show_trends_chart(df_transactions, "date", "running_balance", "white", "Running Balance", "Date", "Amount")
 
     # st.header("Upload JSON Rules")
     # json_file = st.file_uploader("Upload your rules file (json)", type=["json"])
