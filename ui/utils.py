@@ -2,13 +2,14 @@ from datetime import datetime, timedelta
 
 import pandas as pd
 
-def shift_interval(start_date, interval_type, direction):
+def calculate_interval_end(start_date: datetime, interval_type: str) -> datetime:
     if interval_type == "Daily":
-        return start_date + timedelta(days=direction)
+        return start_date + timedelta(days=1)
     elif interval_type == "Weekly":
-        return start_date + timedelta(weeks=direction)
+        return start_date + timedelta(weeks=1)
     elif interval_type == "Monthly":
-        return (start_date + pd.DateOffset(months=direction)).replace(day=1)
+        return (pd.Timestamp(start_date) + pd.DateOffset(months=1)).to_pydatetime()
     elif interval_type == "Yearly":
-        return (start_date + pd.DateOffset(years=direction)).replace(month=1, day=1)
-
+        return (pd.Timestamp(start_date) + pd.DateOffset(years=1)).to_pydatetime()
+    else:
+        raise ValueError(f"Unsupported interval type: {interval_type}")

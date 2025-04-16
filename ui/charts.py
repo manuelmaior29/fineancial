@@ -1,7 +1,10 @@
-import pandas as pd
+import sys
 
+import pandas as pd
 import streamlit as st
 import plotly.graph_objects as go
+
+sys.path.append("../src")
 from utils import string_to_rgb
 
 def show_trends_chart(df: pd.DataFrame, x: str, y: str, color: str, title: str, x_title: str, y_title: str):

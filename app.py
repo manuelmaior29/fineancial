@@ -5,14 +5,16 @@ import streamlit as st
 import pandas as pd
 import json
 
-import ui.charts
-
 sys.path.append("src")
 from processing.parser import BTParser
-from ui.static_content import HELP_UPLOAD_FILE
 from transaction_classification.adapter import TransactionClassificationAdapter
 from transaction_classification.models.rulebased.rulebased import RuleBasedTransactionClassifier
 import processing.filters as filters
+import ui.charts
+import ui.state
+import ui.callbacks
+import ui.utils
+from ui.static_content import HELP_UPLOAD_FILE
 
 def load_csv(file):
     try:
@@ -29,6 +31,7 @@ def load_json(file):
         return None
 
 def main():
+    ui.state.init()
     st.set_page_config(page_title="fineancial", 
                        page_icon=":moneybag:",
                        layout="wide")
@@ -71,12 +74,11 @@ def main():
             select_interval = st.selectbox("Select time interval", ["Daily", "Weekly", "Monthly", "Yearly"])
             col_prev, col_next = st.columns(2)
             with col_prev:
-                prev_interval = st.button("Previous", use_container_width=True)
+                st.button("Previous", on_click=ui.callbacks.shift_time_interval, args=("previous",), use_container_width=True)
             with col_next:
-                next_interval = st.button("Next", use_container_width=True)
+                st.button("Next", on_click=ui.callbacks.shift_time_interval, args=("next",), use_container_width=True)
 
             tab_category_overview, tab_trends = st.tabs(["Category overview", "Trends"])
-
             with tab_category_overview:
                 # TODO: Replace code with module that calculates transaction amount sums by category
                 df_transactions_expenses = df_transactions[df_transactions["transaction_type"] == "Expense"] \
@@ -92,11 +94,9 @@ def main():
                 ui.charts.show_bar_chart(df_transactions_incomes, "category", "amount", "Transaction Amount Sums by Category (Incomes)", "Category", "Amount")
 
             with tab_trends:
-                # TODO: Replace code with module that calculates running balance
                 df_transactions = filters.filter_by_date_period(df_transactions, 
-                                                                df_transactions["date"].max().replace(day=1).to_pydatetime(), 
-                                                                datetime.now())
-                
+                                                                st.session_state.current_interval_start, 
+                                                                ui.utils.calculate_interval_end(st.session_state.current_interval_start, st.session_state.interval_type))
                 
                 df_transactions["signed_amount"] = df_transactions.apply(
                     lambda row: row["amount"] if row["transaction_type"] == "Income" else -row["amount"],
