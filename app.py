@@ -1,5 +1,4 @@
 import sys
-from datetime import datetime
 
 import streamlit as st
 import pandas as pd
@@ -46,6 +45,7 @@ def main():
     csv_file = st.file_uploader("Upload your bank transactions file (CSV)", 
                                 type=["csv"],
                                 help=HELP_UPLOAD_FILE)
+    
     if csv_file is not None:
         transactions = []
         parser = BTParser() # TODO: Add other parsers
@@ -55,56 +55,79 @@ def main():
         df_transactions = pd.DataFrame([transaction.__dict__ for transaction in transactions])
         df_transactions["category"] = [category.value for category in transaction_categories] 
 
+        # Date interval navigation
+        _ = st.selectbox("Select time interval", ["Weekly", "Monthly", "Yearly"], key="interval_type")
+        col_prev, col_next = st.columns(2)
+        with col_prev:
+            st.button("Previous", on_click=ui.callbacks.shift_time_interval, args=("previous",), use_container_width=True)
+        with col_next:
+            st.button("Next", on_click=ui.callbacks.shift_time_interval, args=("next",), use_container_width=True)
+            
+        st.header(f"{st.session_state.current_interval_start} - {st.session_state.current_interval_end}")
+        
         column_data, column_graphs = st.columns([2, 1])
-
-        # Data editor section
+        df_transactions = filters.filter_by_date_period(df_transactions, 
+                                                        st.session_state.current_interval_start, 
+                                                        st.session_state.current_interval_end)
+        df_transactions["category_color"] = df_transactions["category"].apply(lambda x: ui.utils.string_to_emoji(x))
+        
         with column_data:
-
-            # Make aggrid table fit width based on content
-            grid_response = st.data_editor(
+            data_editor_response = st.data_editor(
                 df_transactions,
                 use_container_width=True,
                 height=500,
                 key="transactions_table"
             )
-            df_transactions = pd.DataFrame(grid_response)
+            df_transactions = pd.DataFrame(data_editor_response)
         
         # Graph section
         with column_graphs:
-            select_interval = st.selectbox("Select time interval", ["Daily", "Weekly", "Monthly", "Yearly"])
-            col_prev, col_next = st.columns(2)
-            with col_prev:
-                st.button("Previous", on_click=ui.callbacks.shift_time_interval, args=("previous",), use_container_width=True)
-            with col_next:
-                st.button("Next", on_click=ui.callbacks.shift_time_interval, args=("next",), use_container_width=True)
-
+            
             tab_category_overview, tab_trends = st.tabs(["Category overview", "Trends"])
             with tab_category_overview:
-                # TODO: Replace code with module that calculates transaction amount sums by category
-                df_transactions_expenses = df_transactions[df_transactions["transaction_type"] == "Expense"] \
-                    .groupby(["category"]) \
-                    .agg({"amount": "sum"}) \
-                    .reset_index()
-                ui.charts.show_bar_chart(df_transactions_expenses, "category", "amount", "Transaction Amount Sums by Category (Expenses)", "Category", "Amount")
 
-                df_transactions_incomes = df_transactions[df_transactions["transaction_type"] == "Income"] \
-                    .groupby(["category"]) \
-                    .agg({"amount": "sum"}) \
-                    .reset_index()
-                ui.charts.show_bar_chart(df_transactions_incomes, "category", "amount", "Transaction Amount Sums by Category (Incomes)", "Category", "Amount")
+                col_expenses, col_incomes = st.columns([1, 1])
+                # TODO: Replace code with module that calculates transaction amount sums by category
+                with col_expenses:
+                    df_transactions_expenses = df_transactions[df_transactions["transaction_type"] == "Expense"]
+                    df_transactions_expenses["category_category_color"] = df_transactions_expenses["category"] + df_transactions_expenses["category_color"]
+                    df_transactions_expenses = df_transactions_expenses \
+                        .groupby(["category_category_color"]) \
+                        .agg({"amount": "sum"}) \
+                        .reset_index()
+                    ui.charts.show_bar_chart(df_transactions_expenses, "category_category_color", "amount", "Transaction Amount Sums by Category (Expenses)", "Category", "Amount")
+
+                with col_incomes:
+                    df_transactions_incomes = df_transactions[df_transactions["transaction_type"] == "Expense"]
+                    df_transactions_incomes["category_category_color"] = df_transactions_incomes["category"] + df_transactions_incomes["category_color"]
+                    df_transactions_incomes = df_transactions_incomes \
+                        .groupby(["category_category_color"]) \
+                        .agg({"amount": "sum"}) \
+                        .reset_index()
+                    ui.charts.show_bar_chart(df_transactions_incomes, "category_category_color", "amount", "Transaction Amount Sums by Category (Incomes)", "Category", "Amount")
 
             with tab_trends:
-                df_transactions = filters.filter_by_date_period(df_transactions, 
-                                                                st.session_state.current_interval_start, 
-                                                                ui.utils.calculate_interval_end(st.session_state.current_interval_start, st.session_state.interval_type))
-                
                 df_transactions["signed_amount"] = df_transactions.apply(
                     lambda row: row["amount"] if row["transaction_type"] == "Income" else -row["amount"],
                     axis=1
                 )
+                df_transactions = df_transactions.groupby(df_transactions["date"].dt.date).agg({"signed_amount": "sum"}).reset_index()
                 df_transactions["running_balance"] = df_transactions["signed_amount"].cumsum()
-                ui.charts.show_trends_chart(df_transactions, "date", "running_balance", "white", "Running Balance", "Date", "Amount")
 
+                # FIXME: Adapt for multiple currencies
+                try:
+                    cashflow = df_transactions['running_balance'].iloc[-1]
+                    ui.charts.show_trends_chart(df_transactions, 
+                                                "date", 
+                                                "running_balance", 
+                                                "green" if cashflow >= 0 else "red",
+                                                f"Running Balance", 
+                                                "Date", 
+                                                "Amount")
+                    st.write(f"Cashflow (interval): {cashflow:.2f} RON")
+                except IndexError as _:
+                    cashflow = None
+            
     # st.header("Upload JSON Rules")
     # json_file = st.file_uploader("Upload your rules file (json)", type=["json"])
     # if json_file is not None:
