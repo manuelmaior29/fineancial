@@ -98,7 +98,7 @@ def main():
                     ui.charts.show_bar_chart(df_transactions_expenses, "category_category_color", "amount", "Transaction Amount Sums by Category (Expenses)", "Category", "Amount")
 
                 with col_incomes:
-                    df_transactions_incomes = df_transactions[df_transactions["transaction_type"] == "Expense"]
+                    df_transactions_incomes = df_transactions[df_transactions["transaction_type"] == "Income"]
                     df_transactions_incomes["category_category_color"] = df_transactions_incomes["category"] + df_transactions_incomes["category_color"]
                     df_transactions_incomes = df_transactions_incomes \
                         .groupby(["category_category_color"]) \
