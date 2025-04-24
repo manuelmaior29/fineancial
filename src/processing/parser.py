@@ -2,10 +2,11 @@ from abc import ABC, abstractmethod
 import datetime
 import locale
 import random
-from processing.standard import StandardTransaction
-import pandas as pd
 import re
 
+import pandas as pd
+
+from processing.standard import StandardTransaction
 from transaction_classification.consts import TransactionCategory
 
 try:

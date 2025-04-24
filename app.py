@@ -37,9 +37,13 @@ def main():
     st.title("fineancial")
 
     # AI-driven modules
-    # TODO: Prepare code for hotswapping
-    transaction_classification_model_rule_based = RuleBasedTransactionClassifier(rules=None)
-    transaction_classification_adapter = TransactionClassificationAdapter(model=transaction_classification_model_rule_based, preprocess_fn=lambda x: x.cleaned_desc, postprocess_fn=lambda x: x)
+    st.header("Upload classification rules")
+    classification_rules_file = st.file_uploader("Upload your rules file (JSON)", type=["json"])
+    if classification_rules_file is not None:
+        classification_rules = load_json(classification_rules_file)
+        if classification_rules is not None:
+            st.toast("Loaded classification rules.")
+            st.json(classification_rules)
 
     # Upload CSV file with raw transactions data
     csv_files = st.file_uploader("Upload your bank transactions file (CSV)", 
@@ -47,7 +51,10 @@ def main():
                                 help=HELP_UPLOAD_FILE,
                                 accept_multiple_files=True)
     
-    if len(csv_files) > 0:
+    if len(csv_files) > 0 and classification_rules_file:
+        # TODO: Prepare code for hotswapping
+        transaction_classification_model_rule_based = RuleBasedTransactionClassifier(rules=classification_rules)
+        transaction_classification_adapter = TransactionClassificationAdapter(model=transaction_classification_model_rule_based, preprocess_fn=lambda x: x.cleaned_desc, postprocess_fn=lambda x: x)
         parser = BTParser() # TODO: Add other parsers
 
         transactions = []
@@ -70,10 +77,8 @@ def main():
         
         column_data, column_graphs = st.columns([2, 1])
         df_transactions_filtered = filters.filter_by_date_period(df_transactions, 
-                                                                st.session_state.current_interval_start, 
-                                                                st.session_state.current_interval_end)
-        df_transactions_filtered["category_color"] = df_transactions_filtered["category"].apply(lambda x: ui.utils.string_to_emoji(x))
-        
+                                                                 st.session_state.current_interval_start, 
+                                                                 st.session_state.current_interval_end)
         with column_data:
             data_editor_response = st.data_editor(
                 df_transactions_filtered,
@@ -93,21 +98,19 @@ def main():
                 # TODO: Replace code with module that calculates transaction amount sums by category
                 with col_expenses:
                     df_transactions_expenses = df_transactions_filtered[df_transactions_filtered["transaction_type"] == "Expense"]
-                    df_transactions_expenses["category_category_color"] = df_transactions_expenses["category"] + df_transactions_expenses["category_color"]
                     df_transactions_expenses = df_transactions_expenses \
-                        .groupby(["category_category_color"]) \
+                        .groupby(["category"]) \
                         .agg({"amount": "sum"}) \
                         .reset_index()
-                    ui.charts.show_bar_chart(df_transactions_expenses, "category_category_color", "amount", "Transaction Amount Sums by Category (Expenses)", "Category", "Amount")
+                    ui.charts.show_bar_chart(df_transactions_expenses, "category", "amount", "Transaction Amount Sums by Category (Expenses)", "Category", "Amount")
 
                 with col_incomes:
                     df_transactions_incomes = df_transactions_filtered[df_transactions_filtered["transaction_type"] == "Income"]
-                    df_transactions_incomes["category_category_color"] = df_transactions_incomes["category"] + df_transactions_incomes["category_color"]
                     df_transactions_incomes = df_transactions_incomes \
-                        .groupby(["category_category_color"]) \
+                        .groupby(["category"]) \
                         .agg({"amount": "sum"}) \
                         .reset_index()
-                    ui.charts.show_bar_chart(df_transactions_incomes, "category_category_color", "amount", "Transaction Amount Sums by Category (Incomes)", "Category", "Amount")
+                    ui.charts.show_bar_chart(df_transactions_incomes, "category", "amount", "Transaction Amount Sums by Category (Incomes)", "Category", "Amount")
 
             with tab_trends:
                 df_transactions_filtered["signed_amount"] = df_transactions_filtered.apply(
@@ -130,14 +133,6 @@ def main():
                     st.write(f"Cashflow (interval): {cashflow:.2f} RON")
                 except IndexError as _:
                     cashflow = None
-                
-        # st.header("Upload JSON Rules")
-        # json_file = st.file_uploader("Upload your rules file (json)", type=["json"])
-        # if json_file is not None:
-        #     rules = load_json(json_file)
-        #     if rules is not None:
-        #         st.write("**Loaded Rules:**")
-        #         st.json(rules)
-
+            
 if __name__ == "__main__":
     main()
