@@ -2,10 +2,8 @@ import sys
 
 import streamlit as st
 import pandas as pd
-import json
 
 sys.path.append("src")
-from processing.parser import BTParser
 from transaction_classification.adapter import TransactionClassificationAdapter
 from transaction_classification.models.rulebased.rulebased import RuleBasedTransactionClassifier
 import processing.filters as filters
