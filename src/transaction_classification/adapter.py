@@ -15,6 +15,7 @@ class TransactionClassificationAdapter:
         self.postprocess_fn = postprocess_fn
 
     def predict(self, transaction: StandardTransaction) -> TransactionCategory:
+        print(str(transaction))
         model_input = self.preprocess_fn(transaction)
         prediction = self.model.predict(model_input)
         return self.postprocess_fn(prediction)

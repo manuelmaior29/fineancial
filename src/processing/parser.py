@@ -23,7 +23,7 @@ class BaseParser(ABC):
         raise NotImplementedError()
 
 class BTParser(BaseParser):
-    def parse(self, file, substrings_to_remove=[], sep=','):
+    def parse(self, file, substrings_to_remove=[], sep=',') -> list[StandardTransaction]:
         # df_metadata = pd.read_csv(file, skiprows=9, nrows=4, sep=sep)
         # df_metadata.columns = [0, 1]
         file.seek(0)

@@ -12,22 +12,8 @@ import processing.filters as filters
 import ui.charts
 import ui.state
 import ui.callbacks
-import ui.utils
-from ui.static_content import HELP_UPLOAD_FILE
-
-def load_csv(file):
-    try:
-        return pd.read_csv(file)
-    except Exception as e:
-        st.error(f"Error reading CSV file: {e}")
-        return None
-
-def load_json(file):
-    try:
-        return json.load(file)
-    except json.JSONDecodeError as e:
-        st.error(f"Error reading JSON file: {e}")
-        return None
+import ui.inputs
+import ui.static_content
 
 def main():
     ui.state.init()
@@ -37,29 +23,22 @@ def main():
     st.title("fineancial")
 
     # AI-driven modules
-    st.header("Upload classification rules")
-    classification_rules_file = st.file_uploader("Upload your rules file (JSON)", type=["json"])
-    if classification_rules_file is not None:
-        classification_rules = load_json(classification_rules_file)
-        if classification_rules is not None:
-            st.toast("Loaded classification rules.")
-            st.json(classification_rules)
+    classification_rules = ui.inputs.upload_file(label=ui.static_content.LABEL_UPLOAD_FILE_CLASSIFICATION_RULES, 
+                                                 file_types=["json"], 
+                                                 parser_fn=ui.inputs.parse_json, 
+                                                 key="file_classification_rules")
 
-    # Upload CSV file with raw transactions data
-    csv_files = st.file_uploader("Upload your bank transactions file (CSV)", 
-                                type=["csv"],
-                                help=HELP_UPLOAD_FILE,
-                                accept_multiple_files=True)
+    # Upload CSV file(s) with raw transactions data
+    transactions = ui.inputs.upload_file(label=ui.static_content.LABEL_UPLOAD_FILE_TRANSACTIONS, 
+                                         file_types=["csv", "xlsx"],
+                                         parser_fn=ui.inputs.parse_transactions,
+                                         key="file_transactions_data",
+                                         allow_multiple=True)
     
-    if len(csv_files) > 0 and classification_rules_file:
+    if transactions and classification_rules:
         # TODO: Prepare code for hotswapping
         transaction_classification_model_rule_based = RuleBasedTransactionClassifier(rules=classification_rules)
         transaction_classification_adapter = TransactionClassificationAdapter(model=transaction_classification_model_rule_based, preprocess_fn=lambda x: x.cleaned_desc, postprocess_fn=lambda x: x)
-        parser = BTParser() # TODO: Add other parsers
-
-        transactions = []
-        for csv_file in csv_files:
-            transactions += parser.parse(csv_file, substrings_to_remove=[], sep=",")
 
         transaction_categories = [transaction_classification_adapter.predict(transaction) for transaction in transactions]
         df_transactions = pd.DataFrame([transaction.__dict__ for transaction in transactions])
@@ -74,7 +53,6 @@ def main():
             st.button("Next", on_click=ui.callbacks.shift_time_interval, args=("next",), use_container_width=True)
             
         st.header(f"{st.session_state.current_interval_start} - {st.session_state.current_interval_end}")
-        
         column_data, column_graphs = st.columns([2, 1])
         df_transactions_filtered = filters.filter_by_date_period(df_transactions, 
                                                                  st.session_state.current_interval_start, 
@@ -95,21 +73,14 @@ def main():
             with tab_category_overview:
 
                 col_expenses, col_incomes = st.columns([1, 1])
-                # TODO: Replace code with module that calculates transaction amount sums by category
                 with col_expenses:
                     df_transactions_expenses = df_transactions_filtered[df_transactions_filtered["transaction_type"] == "Expense"]
-                    df_transactions_expenses = df_transactions_expenses \
-                        .groupby(["category"]) \
-                        .agg({"amount": "sum"}) \
-                        .reset_index()
+                    df_transactions_expenses = df_transactions_expenses.groupby(["category"]).agg({"amount": "sum"}).reset_index()
                     ui.charts.show_bar_chart(df_transactions_expenses, "category", "amount", "Transaction Amount Sums by Category (Expenses)", "Category", "Amount")
 
                 with col_incomes:
                     df_transactions_incomes = df_transactions_filtered[df_transactions_filtered["transaction_type"] == "Income"]
-                    df_transactions_incomes = df_transactions_incomes \
-                        .groupby(["category"]) \
-                        .agg({"amount": "sum"}) \
-                        .reset_index()
+                    df_transactions_incomes = df_transactions_incomes.groupby(["category"]).agg({"amount": "sum"}).reset_index()
                     ui.charts.show_bar_chart(df_transactions_incomes, "category", "amount", "Transaction Amount Sums by Category (Incomes)", "Category", "Amount")
 
             with tab_trends:
@@ -122,7 +93,7 @@ def main():
 
                 # FIXME: Adapt for multiple currencies
                 try:
-                    cashflow = df_transactions_filtered['running_balance'].iloc[-1]
+                    cashflow = df_transactions_filtered['running_balance'].iloc[-1] - df_transactions_filtered['running_balance'].iloc[0]
                     ui.charts.show_trends_chart(df_transactions_filtered, 
                                                 "date", 
                                                 "running_balance", 
