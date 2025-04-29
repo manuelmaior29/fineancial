@@ -25,7 +25,6 @@ class RuleBasedTransactionClassifier:
         cleaned_desc = description.lower().strip()
         for category, keywords in self.rules.items():
             if any(re.search(rf"\b{kw}\b", cleaned_desc) for kw in keywords):
-                print(category)
                 cat = list(filter(lambda x: x.value == category, list(TransactionCategory)))[0]
                 return cat
         return TransactionCategory.OTHER
