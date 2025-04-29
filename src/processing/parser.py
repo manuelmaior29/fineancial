@@ -1,10 +1,12 @@
 from abc import ABC, abstractmethod
+import datetime
 import locale
 import random
-from preprocessing.standard import StandardTransaction
-import pandas as pd
 import re
 
+import pandas as pd
+
+from processing.standard import StandardTransaction
 from transaction_classification.consts import TransactionCategory
 
 try:
@@ -21,7 +23,7 @@ class BaseParser(ABC):
         raise NotImplementedError()
 
 class BTParser(BaseParser):
-    def parse(self, file, substrings_to_remove=[], sep=','):
+    def parse(self, file, substrings_to_remove=[], sep=',') -> list[StandardTransaction]:
         # df_metadata = pd.read_csv(file, skiprows=9, nrows=4, sep=sep)
         # df_metadata.columns = [0, 1]
         file.seek(0)
@@ -48,7 +50,11 @@ class BTParser(BaseParser):
 
     def get_date(self, row):
         date = re.search(r"(\d{2}/\d{2}/\d{4})", row["Description"])
-        return date[0] if date else row["Processing date"]
+        date = date[0] if date else row["Processing date"]
+        date = date.replace("-", "/")
+        date = datetime.datetime.strptime(date, "%d/%m/%Y").date()
+        date = pd.to_datetime(date)
+        return date
     
     def get_transaction_type(self, row):
         return "Income" if pd.notna(row["Credit"]) else ("Expense" if pd.notna(row["Debit"]) else "Unknown")
